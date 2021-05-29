@@ -2,7 +2,7 @@
 # by. BlockDMask
 import pygame
 import sys
-
+from pygame_functions import *
 # step1 : set screen, fps
 # step2 : show dino, jump dino
 # step3 : show tree, move tree
@@ -12,7 +12,8 @@ pygame.display.set_caption('Jumping dino')
 MAX_WIDTH = 800
 MAX_HEIGHT = 400
 
-
+nextFrame = clock()
+frame = 0
 def main():
     # set screen, fps
     screen = pygame.display.set_mode((MAX_WIDTH, MAX_HEIGHT))
