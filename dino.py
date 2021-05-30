@@ -11,9 +11,17 @@ pygame.init()
 pygame.display.set_caption('Jumping dino')
 MAX_WIDTH = 800
 MAX_HEIGHT = 400
+setBackgroundImage("images/corridor.png")  # A background image always sits behind the sprites
 
-nextFrame = clock()
-frame = 0
+agent = makeSprite("images/agent7.png")     # We create the sprite with the default image
+addSpriteImage(agent, "images/agent8.png")  # Add extra images. They are stored in the Sprite object
+addSpriteImage(agent, "images/agent1.png")  # but not displayed yet
+addSpriteImage(agent, "images/agent2.png")
+addSpriteImage(agent, "images/agent3.png")
+addSpriteImage(agent, "images/agent4.png")
+addSpriteImage(agent, "images/agent5.png")
+addSpriteImage(agent, "images/agent6.png")
+
 def main():
     # set screen, fps
     screen = pygame.display.set_mode((MAX_WIDTH, MAX_HEIGHT))
