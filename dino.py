@@ -2,7 +2,6 @@
 # by. BlockDMask
 import pygame
 import sys
-from pygame_functions import *
 import os
 import pygame
 
