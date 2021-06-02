@@ -6,9 +6,10 @@ from pygame import *
 
 pygame.init()
 
-scr_size = (width,height) = (600,150)
+scr_size = (width,height) = (600,300)
 FPS = 60
 gravity = 0.6
+jumpCount = 0
 
 black = (0,0,0)
 white = (255,255,255)
@@ -112,7 +113,7 @@ def extractDigits(number):
 
 class Dino():
     def __init__(self,sizex=-1,sizey=-1):
-        self.images,self.rect = load_sprite_sheet('ma.png',4,1,sizex,sizey,-1)
+        self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
         self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1) #숙인 높이 조정
         self.rect.bottom = int(0.98*height)
         self.rect.left = width/15
@@ -163,10 +164,10 @@ class Dino():
            self.index = 4
 
         if not self.isDucking:
-            ind = self.index
-            if self.index ==4:
-                ind=self.index-1
-            self.image = self.images[ind]
+            # ind = self.index
+            # if self.index == 4:
+            #     ind=self.index-1
+            self.image = self.images[self.index]
             self.rect.width = self.stand_pos_width
         else:
             self.image = self.images1[(self.index)%2]
@@ -182,6 +183,7 @@ class Dino():
                     checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
+
 
 class Cactus(pygame.sprite.Sprite):
     def __init__(self,speed=5,sizex=-1,sizey=-1):
