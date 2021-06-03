@@ -126,8 +126,7 @@ class Dino():
         self.isDucking = False
         self.isBlinking = False
         self.movement = [0,0]
-        self.jumpSpeed = 10.5
-        #self.jumpCount = 0
+        self.jumpSpeed = 11.5
 
         self.stand_pos_width = self.rect.width
         self.duck_pos_width = self.rect1.width
@@ -318,7 +317,7 @@ def introscreen():
                     return True
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
-                        temp_dino.isJumping = True
+                        temp_dino.isJumping = False
                         temp_dino.isBlinking = False
                         temp_dino.movement[1] = -1*temp_dino.jumpSpeed
 
@@ -348,8 +347,6 @@ def gameplay():
     scb = Scoreboard()
     highsc = Scoreboard(width*0.78)
     counter = 0
-    jumpCount = 0
-
 
     cacti = pygame.sprite.Group()
     pteras = pygame.sprite.Group()
@@ -383,32 +380,24 @@ def gameplay():
                 gameOver = True
             else:
                 for event in pygame.event.get():
-                    print(jumpCount)
-                    if playerDino.rect.bottom == int(0.98 * height):
-                        jumpCount = 0
                     if event.type == pygame.QUIT:
                         gameQuit = True
                         gameOver = True
 
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_SPACE:
-
-                            if (jumpCount < 2):
+                            if playerDino.rect.bottom == int(0.98*height):
                                 playerDino.isJumping = True
                                 if pygame.mixer.get_init() != None:
                                     jump_sound.play()
                                 playerDino.movement[1] = -1*playerDino.jumpSpeed
-
 
                         if event.key == pygame.K_DOWN:
                             if not (playerDino.isJumping and playerDino.isDead):
                                 playerDino.isDucking = True
 
                     if event.type == pygame.KEYUP:
-                        if event.key == pygame.K_SPACE:
-                            jumpCount = jumpCount + 1
-
-                        elif event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_DOWN:
                             playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
