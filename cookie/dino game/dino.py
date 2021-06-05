@@ -127,6 +127,7 @@ class Dino():
         self.isBlinking = False
         self.movement = [0,0]
         self.jumpSpeed = 10.5
+        self.maxSize = [88,94]
         #self.jumpCount = 0
 
         self.stand_pos_width = self.rect.width
@@ -343,7 +344,7 @@ def gameplay():
     startMenu = False
     gameOver = False
     gameQuit = False
-    playerDino = Dino(44,47)
+    playerDino = Dino(132,141)
     new_ground = Ground(-1*gamespeed)
     scb = Scoreboard()
     highsc = Scoreboard(width*0.78)
