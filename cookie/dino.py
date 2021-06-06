@@ -10,6 +10,7 @@ scr_size = (width,height) = (600,300)
 FPS = 60
 gravity = 0.6
 jumpCount = 0
+color = 0  #0blue 1red -1green
 
 black = (0,0,0)
 white = (255,255,255)
@@ -53,7 +54,7 @@ def load_sprite_sheet(
         scaley = -1,
         colorkey = None,
         ):
-    fullname = os.path.join('images',sheetname)
+    fullname = os.path.join('images', sheetname)
     sheet = pygame.image.load(fullname)
     sheet = sheet.convert()
 
@@ -115,9 +116,15 @@ class Dino():
     def __init__(self,sizex=-1,sizey=-1):
         self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
         self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1) #숙인 높이 조정
+        self.imagesR, self.rect = load_sprite_sheet('dinoRed.png', 5, 1, sizex, sizey, -1)
+        self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1)
+        self.imagesG, self.rect = load_sprite_sheet('dinoGreen.png', 5, 1, sizex, sizey, -1)
+        self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1)
         self.rect.bottom = int(0.98*height)
         self.rect.left = width/15
         self.image = self.images[0]
+        self.imageR = self.imagesR[0]
+        self.imageG = self.imagesG[0]
         self.index = 0
         self.counter = 0
         self.score = 0
@@ -126,13 +133,21 @@ class Dino():
         self.isDucking = False
         self.isBlinking = False
         self.movement = [0,0]
-        self.jumpSpeed = 11.5
+        self.jumpSpeed = 10.5
+        self.maxSize = [132,141]
+
+        #self.jumpCount = 0
 
         self.stand_pos_width = self.rect.width
         self.duck_pos_width = self.rect1.width
 
     def draw(self):
-        screen.blit(self.image,self.rect)
+        if (color == 0):
+            screen.blit(self.image,self.rect)
+        elif (color == -1):
+            screen.blit(self.imageG,self.rect)
+        elif (color == 1):
+            screen.blit(self.imageR,self.rect)
 
     def checkbounds(self):
         if self.rect.bottom > int(0.98*height):
@@ -299,6 +314,7 @@ def introscreen():
     temp_dino = Dino(44,47)
     temp_dino.isBlinking = True
     gameStart = False
+    global color
 
     temp_ground,temp_ground_rect = load_sprite_sheet('ground.png',15,1,-1,-1,-1)
     temp_ground_rect.left = width/20
@@ -317,9 +333,16 @@ def introscreen():
                     return True
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
-                        temp_dino.isJumping = False
+                        temp_dino.isJumping = True
                         temp_dino.isBlinking = False
                         temp_dino.movement[1] = -1*temp_dino.jumpSpeed
+                    if event.key == pygame.K_RIGHT:
+                        color = color +1
+                        print(color);
+                    if event.key == pygame.K_LEFT:
+                        color = color -1
+                        print(color)
+
 
         temp_dino.update()
 
@@ -342,11 +365,13 @@ def gameplay():
     startMenu = False
     gameOver = False
     gameQuit = False
-    playerDino = Dino(44,47)
+    playerDino = Dino(43,47)
     new_ground = Ground(-1*gamespeed)
     scb = Scoreboard()
     highsc = Scoreboard(width*0.78)
     counter = 0
+    jumpCount = 0
+
 
     cacti = pygame.sprite.Group()
     pteras = pygame.sprite.Group()
@@ -380,24 +405,32 @@ def gameplay():
                 gameOver = True
             else:
                 for event in pygame.event.get():
+                    print(jumpCount)
+                    if playerDino.rect.bottom == int(0.98 * height):
+                        jumpCount = 0
                     if event.type == pygame.QUIT:
                         gameQuit = True
                         gameOver = True
 
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_SPACE:
-                            if playerDino.rect.bottom == int(0.98*height):
+
+                            if (jumpCount < 2):
                                 playerDino.isJumping = True
                                 if pygame.mixer.get_init() != None:
                                     jump_sound.play()
                                 playerDino.movement[1] = -1*playerDino.jumpSpeed
+
 
                         if event.key == pygame.K_DOWN:
                             if not (playerDino.isJumping and playerDino.isDead):
                                 playerDino.isDucking = True
 
                     if event.type == pygame.KEYUP:
-                        if event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_SPACE:
+                            jumpCount = jumpCount + 1
+
+                        elif event.key == pygame.K_DOWN:
                             playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
