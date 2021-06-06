@@ -115,16 +115,19 @@ def extractDigits(number):
 class Dino():
     def __init__(self,sizex=-1,sizey=-1):
         self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
-        self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1) #숙인 높이 조정
+        self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1) #원본
         self.imagesR, self.rect = load_sprite_sheet('dinoRed.png', 5, 1, sizex, sizey, -1)
-        self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1)
+        self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1) #빨강 공룡
         self.imagesG, self.rect = load_sprite_sheet('dinoGreen.png', 5, 1, sizex, sizey, -1)
-        self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1)
+        self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1) #초록 공룡
+
         self.rect.bottom = int(0.98*height)
         self.rect.left = width/15
+
         self.image = self.images[0]
         self.imageR = self.imagesR[0]
         self.imageG = self.imagesG[0]
+
         self.index = 0
         self.counter = 0
         self.score = 0
@@ -155,6 +158,7 @@ class Dino():
             self.isJumping = False
 
     def update(self):
+        global color
         if self.isJumping:
             self.movement[1] = self.movement[1] + gravity
 
@@ -182,10 +186,20 @@ class Dino():
             # ind = self.index
             # if self.index == 4:
             #     ind=self.index-1
-            self.image = self.images[self.index]
+            if (color == 0):
+                self.image = self.images[self.index]
+            elif (color == 1):
+                self.imageR = self.imagesR[self.index]
+            elif (color == -1):
+                self.imageG = self.imagesG[self.index]
             self.rect.width = self.stand_pos_width
         else:
-            self.image = self.images1[(self.index)%2]
+            if (color == 0):
+                self.image = self.images1[(self.index)%2]
+            elif (color == 1):
+                self.imageR = self.imagesR1[(self.index)%2]
+            elif (color == -1):
+                self.imageG = self.imagesG1[(self.index)%2]
             self.rect.width = self.duck_pos_width
 
         self.rect = self.rect.move(self.movement)
