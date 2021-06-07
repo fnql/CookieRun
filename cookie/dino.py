@@ -5,7 +5,7 @@ import random
 from pygame import *
 
 pygame.init()
-
+# 472 선인장 수정
 scr_size = (width,height) = (600,300)
 FPS = 60
 gravity = 0.6
@@ -17,6 +17,7 @@ white = (255,255,255)
 background_col = (235,235,235)
 
 high_score = 0
+bigCacti = 0
 
 screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
@@ -135,9 +136,9 @@ class Dino():
         self.isDead = False
         self.isDucking = False
         self.isBlinking = False
+        self.isBig = False
         self.movement = [0,0]
         self.jumpSpeed = 10.5
-        self.maxSize = [132,141]
 
         #self.jumpCount = 0
 
@@ -202,6 +203,11 @@ class Dino():
                 self.imageG = self.imagesG1[(self.index)%2]
             self.rect.width = self.duck_pos_width
 
+        if self.isBig:
+            sizex = 132
+            sizey = 141
+
+
         self.rect = self.rect.move(self.movement)
         self.checkbounds()
 
@@ -217,7 +223,7 @@ class Dino():
 class Cactus(pygame.sprite.Sprite):
     def __init__(self,speed=5,sizex=-1,sizey=-1):
         pygame.sprite.Sprite.__init__(self,self.containers)
-        self.images,self.rect = load_sprite_sheet('cacti-small.png',3,1,sizex,sizey,-1)
+        self.images,self.rect = load_sprite_sheet('cacti-big.png',3,1,sizex,sizey,-1)
         self.rect.bottom = int(0.98*height)
         self.rect.left = width + self.rect.width
         self.image = self.images[random.randrange(0,3)]
@@ -253,6 +259,24 @@ class Ptera(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.rect = self.rect.move(self.movement)
         self.counter = (self.counter + 1)
+        if self.rect.right < 0:
+            self.kill()
+
+class Mush(pygame.sprite.Sprite):
+    def __init__(self,speed=5,sizex=-1,sizey=-1):
+        pygame.sprite.Sprite.__init__(self,self.containers)
+        self.images,self.rect = load_sprite_sheet('mushroom.png',1,1,sizex,sizey,-1)
+        self.rect.bottom = int(0.98*height)
+        self.rect.left = width + self.rect.width
+        self.image = self.images[0]
+        self.movement = [-1*speed,0]
+
+    def draw(self):
+        screen.blit(self.image,self.rect)
+
+    def update(self):
+        self.rect = self.rect.move(self.movement)
+
         if self.rect.right < 0:
             self.kill()
 
@@ -375,11 +399,13 @@ def introscreen():
 
 def gameplay():
     global high_score
+    global bigCacti
     gamespeed = 4
     startMenu = False
     gameOver = False
     gameQuit = False
-    playerDino = Dino(43,47)
+    playerDino = Dino(44,47)
+    playerDino1 = Dino(132, 141)
     new_ground = Ground(-1*gamespeed)
     scb = Scoreboard()
     highsc = Scoreboard(width*0.78)
@@ -390,11 +416,13 @@ def gameplay():
     cacti = pygame.sprite.Group()
     pteras = pygame.sprite.Group()
     clouds = pygame.sprite.Group()
+    mush = pygame.sprite.Group()
     last_obstacle = pygame.sprite.Group()
 
     Cactus.containers = cacti
     Ptera.containers = pteras
     Cloud.containers = clouds
+    Mush.containers = mush
 
     retbutton_image,retbutton_rect = load_image('replay_button.png',35,31,-1)
     gameover_image,gameover_rect = load_image('game_over.png',190,11,-1)
@@ -419,7 +447,7 @@ def gameplay():
                 gameOver = True
             else:
                 for event in pygame.event.get():
-                    print(jumpCount)
+                    # print(jumpCount)
                     if playerDino.rect.bottom == int(0.98 * height):
                         jumpCount = 0
                     if event.type == pygame.QUIT:
@@ -460,6 +488,13 @@ def gameplay():
                     if pygame.mixer.get_init() != None:
                         die_sound.play()
 
+            for m in mush:
+                m.movement[0] = -1*gamespeed
+                if pygame.sprite.collide_mask(playerDino,m):
+                    playerDino.isBig = True
+                    # if pygame.mixer.get_init() != None:
+                    #      die_sound.play()
+
             if len(cacti) < 2:
                 if len(cacti) == 0:
                     last_obstacle.empty()
@@ -467,14 +502,24 @@ def gameplay():
                 else:
                     for l in last_obstacle:
                         if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            bigCacti = random.randint(1,10)
                             last_obstacle.empty()
-                            last_obstacle.add(Cactus(gamespeed, 40, 40))
+                            if (bigCacti<=3):
+                                last_obstacle.add(Cactus(gamespeed, 40, 40))
+                            elif (bigCacti>3):
+                                last_obstacle.add(Cactus(gamespeed, 60, 60))
 
             if len(pteras) == 0 and random.randrange(0,200) == 10 and counter > 500:
                 for l in last_obstacle:
                     if l.rect.right < width*0.8:
                         last_obstacle.empty()
                         last_obstacle.add(Ptera(gamespeed, 46, 40))
+
+            if len(mush) == 0 and random.randrange(0,200) == 10 and counter > 500:
+                for l in last_obstacle:
+                    if l.rect.right < width*0.8:
+                        last_obstacle.empty()
+                        last_obstacle.add(Mush(gamespeed, 46, 40))
 
             if len(clouds) < 5 and random.randrange(0,300) == 10:
                 Cloud(width,random.randrange(height/5,height/2))
@@ -483,6 +528,7 @@ def gameplay():
             cacti.update()
             pteras.update()
             clouds.update()
+            mush.update()
             new_ground.update()
             scb.update(playerDino.score)
             highsc.update(high_score)
@@ -497,6 +543,7 @@ def gameplay():
                     screen.blit(HI_image,HI_rect)
                 cacti.draw(screen)
                 pteras.draw(screen)
+                mush.draw(screen)
                 playerDino.draw()
 
                 pygame.display.update()
