@@ -18,6 +18,7 @@ background_col = (235,235,235)
 
 high_score = 0
 bigCacti = 0
+score = 0
 
 screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
@@ -121,7 +122,6 @@ class Dino():
         self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1) #빨강 공룡
         self.imagesG, self.rect = load_sprite_sheet('dinoGreen.png', 5, 1, sizex, sizey, -1)
         self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1) #초록 공룡
-
         self.rect.bottom = int(0.98*height)
         self.rect.left = width/15
 
@@ -131,7 +131,7 @@ class Dino():
 
         self.index = 0
         self.counter = 0
-        self.score = 0
+        global score
         self.isJumping = False
         self.isDead = False
         self.isDucking = False
@@ -160,6 +160,7 @@ class Dino():
 
     def update(self):
         global color
+        global score
         if self.isJumping:
             self.movement[1] = self.movement[1] + gravity
 
@@ -203,17 +204,17 @@ class Dino():
                 self.imageG = self.imagesG1[(self.index)%2]
             self.rect.width = self.duck_pos_width
 
-        if self.isBig:
-            sizex = 132
-            sizey = 141
+        # if self.isBig:
+        #     sizex = 132
+        #     sizey = 141
 
 
         self.rect = self.rect.move(self.movement)
         self.checkbounds()
 
         if not self.isDead and self.counter % 7 == 6 and self.isBlinking == False:
-            self.score += 1
-            if self.score % 100 == 0 and self.score != 0:
+            score += 1
+            if score % 100 == 0 and score != 0:
                 if pygame.mixer.get_init() != None:
                     checkPoint_sound.play()
 
@@ -400,17 +401,20 @@ def introscreen():
 def gameplay():
     global high_score
     global bigCacti
+    global score
     gamespeed = 4
     startMenu = False
     gameOver = False
     gameQuit = False
     playerDino = Dino(44,47)
     playerDino1 = Dino(132, 141)
+    playerDino2 = playerDino
     new_ground = Ground(-1*gamespeed)
     scb = Scoreboard()
     highsc = Scoreboard(width*0.78)
     counter = 0
     jumpCount = 0
+    nowTime = 0
 
 
     cacti = pygame.sprite.Group()
@@ -447,7 +451,8 @@ def gameplay():
                 gameOver = True
             else:
                 for event in pygame.event.get():
-                    # print(jumpCount)
+                    if (nowTime +200 <= counter):
+                        playerDino = playerDino2
                     if playerDino.rect.bottom == int(0.98 * height):
                         jumpCount = 0
                     if event.type == pygame.QUIT:
@@ -491,7 +496,9 @@ def gameplay():
             for m in mush:
                 m.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,m):
-                    playerDino.isBig = True
+                    nowTime = counter
+                    # playerDino.isBig = True
+                    playerDino = playerDino1
                     # if pygame.mixer.get_init() != None:
                     #      die_sound.play()
 
@@ -515,7 +522,7 @@ def gameplay():
                         last_obstacle.empty()
                         last_obstacle.add(Ptera(gamespeed, 46, 40))
 
-            if len(mush) == 0 and random.randrange(0,200) == 10 and counter > 500:
+            if len(mush) == 0 and random.randrange(0,100) == 10 and counter > 0:
                 for l in last_obstacle:
                     if l.rect.right < width*0.8:
                         last_obstacle.empty()
@@ -530,7 +537,7 @@ def gameplay():
             clouds.update()
             mush.update()
             new_ground.update()
-            scb.update(playerDino.score)
+            scb.update(score)
             highsc.update(high_score)
 
             if pygame.display.get_surface() != None:
@@ -551,8 +558,8 @@ def gameplay():
 
             if playerDino.isDead:
                 gameOver = True
-                if playerDino.score > high_score:
-                    high_score = playerDino.score
+                if score > high_score:
+                    high_score = score
 
             if counter%700 == 699:
                 new_ground.speed -= 1
