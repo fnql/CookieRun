@@ -117,11 +117,19 @@ def extractDigits(number):
 class Dino():
     def __init__(self,sizex=-1,sizey=-1):
         self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
-        self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1) #원본
         self.imagesR, self.rect = load_sprite_sheet('dinoRed.png', 5, 1, sizex, sizey, -1)
-        self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1) #빨강 공룡
         self.imagesG, self.rect = load_sprite_sheet('dinoGreen.png', 5, 1, sizex, sizey, -1)
-        self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1) #초록 공룡
+
+
+        if(sizex ==132):
+            self.images1, self.rect1 = load_sprite_sheet('dino_ducking.png', 2, 1, 177, sizey, -1)  # 원본
+            self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 177, sizey, -1)  # 빨강 공룡
+            self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 177, sizey, -1)  # 초록 공룡
+        else:
+            self.images1, self.rect1 = load_sprite_sheet('dino_ducking.png', 2, 1, 59, sizey, -1)  # 원본
+            self.imagesR1, self.rect1 = load_sprite_sheet('dino_duckingRed.png', 2, 1, 59, sizey, -1)  # 빨강 공룡
+            self.imagesG1, self.rect1 = load_sprite_sheet('dino_duckingGreen.png', 2, 1, 59, sizey, -1)  # 초록 공룡
+
         self.rect.bottom = int(0.98*height)
         self.rect.left = width/15
 
@@ -150,7 +158,7 @@ class Dino():
             screen.blit(self.image,self.rect)
         elif (color == -1):
             screen.blit(self.imageG,self.rect)
-        elif (color == 1):
+        else:
             screen.blit(self.imageR,self.rect)
 
     def checkbounds(self):
@@ -402,10 +410,12 @@ def gameplay():
     global high_score
     global bigCacti
     global score
+    global color
     gamespeed = 4
     startMenu = False
     gameOver = False
     gameQuit = False
+    dev = False
     playerDino = Dino(44,47)
     playerDino1 = Dino(132, 141)
     playerDino2 = playerDino
@@ -449,9 +459,10 @@ def gameplay():
                 print("Couldn't load display surface")
                 gameQuit = True
                 gameOver = True
+
             else:
                 for event in pygame.event.get():
-                    if (nowTime +200 <= counter):
+                    if (not dev and nowTime +150 <= counter):
                         playerDino = playerDino2
                     if playerDino.rect.bottom == int(0.98 * height):
                         jumpCount = 0
@@ -468,6 +479,10 @@ def gameplay():
                                     jump_sound.play()
                                 playerDino.movement[1] = -1*playerDino.jumpSpeed
 
+                        if event.key == pygame.K_r: #무적
+                            playerDino = playerDino1
+                            playerDino.isBig = True
+                            dev = True
 
                         if event.key == pygame.K_DOWN:
                             if not (playerDino.isJumping and playerDino.isDead):
@@ -481,24 +496,26 @@ def gameplay():
                             playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
-                if pygame.sprite.collide_mask(playerDino,c):
-                    playerDino.isDead = True
-                    if pygame.mixer.get_init() != None:
-                        die_sound.play()
+                if (not playerDino.isBig):
+                    if pygame.sprite.collide_mask(playerDino,c):
+                        playerDino.isDead = True
+                        if pygame.mixer.get_init() != None:
+                            die_sound.play()
 
             for p in pteras:
                 p.movement[0] = -1*gamespeed
-                if pygame.sprite.collide_mask(playerDino,p):
-                    playerDino.isDead = True
-                    if pygame.mixer.get_init() != None:
-                        die_sound.play()
+                if (not playerDino.isBig):
+                    if pygame.sprite.collide_mask(playerDino,p):
+                        playerDino.isDead = True
+                        if pygame.mixer.get_init() != None:
+                            die_sound.play()
 
             for m in mush:
                 m.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,m):
                     nowTime = counter
-                    # playerDino.isBig = True
                     playerDino = playerDino1
+                    playerDino.isBig = True
                     # if pygame.mixer.get_init() != None:
                     #      die_sound.play()
 
@@ -522,7 +539,7 @@ def gameplay():
                         last_obstacle.empty()
                         last_obstacle.add(Ptera(gamespeed, 46, 40))
 
-            if len(mush) == 0 and random.randrange(0,100) == 10 and counter > 0:
+            if len(mush) == 0 and random.randrange(0,100) == 10 and counter > 0 and not playerDino.isBig:
                 for l in last_obstacle:
                     if l.rect.right < width*0.8:
                         last_obstacle.empty()
@@ -552,7 +569,6 @@ def gameplay():
                 pteras.draw(screen)
                 mush.draw(screen)
                 playerDino.draw()
-
                 pygame.display.update()
             clock.tick(FPS)
 
