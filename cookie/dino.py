@@ -10,8 +10,8 @@ scr_size = (width,height) = (600,300)
 FPS = 60
 gravity = 0.6
 jumpCount = 0
-color = 0  #0blue 1red -1green
-wal =0
+color = 0  #0blue 1red 2green
+wal =100
 game_font = pygame.font.Font(None, 40)
 
 black = (0,0,0)
@@ -147,6 +147,7 @@ class Dino():
         self.isDucking = False
         self.isBlinking = False
         self.isBig = False
+        self.isLock = [False, False, True]
         self.movement = [0,0]
         self.jumpSpeed = 10.5
 
@@ -158,7 +159,7 @@ class Dino():
     def draw(self):
         if (color == 0):
             screen.blit(self.image,self.rect)
-        elif (color == -1):
+        elif (color == 2):
             screen.blit(self.imageG,self.rect)
         else:
             screen.blit(self.imageR,self.rect)
@@ -202,7 +203,7 @@ class Dino():
                 self.image = self.images[self.index]
             elif (color == 1):
                 self.imageR = self.imagesR[self.index]
-            elif (color == -1):
+            elif (color == 2):
                 self.imageG = self.imagesG[self.index]
             self.rect.width = self.stand_pos_width
         else:
@@ -210,7 +211,7 @@ class Dino():
                 self.image = self.images1[(self.index)%2]
             elif (color == 1):
                 self.imageR = self.imagesR1[(self.index)%2]
-            elif (color == -1):
+            elif (color == 2):
                 self.imageG = self.imagesG1[(self.index)%2]
             self.rect.width = self.duck_pos_width
 
@@ -406,6 +407,7 @@ def introscreen():
     temp_dino.isBlinking = True
     gameStart = False
     global color
+    global wal
 
     temp_ground,temp_ground_rect = load_sprite_sheet('ground.png',15,1,-1,-1,-1)
     temp_ground_rect.left = width/20
@@ -424,15 +426,22 @@ def introscreen():
                     return True
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
-                        temp_dino.isJumping = True
-                        temp_dino.isBlinking = False
-                        temp_dino.movement[1] = -1*temp_dino.jumpSpeed
+                        print(temp_dino.isLock[color])
+                        if not temp_dino.isLock[color]:
+                            temp_dino.isJumping = True
+                            temp_dino.isBlinking = False
+                            temp_dino.movement[1] = -1*temp_dino.jumpSpeed
                     if event.key == pygame.K_RIGHT:
                         color = color +1
                         print(color);
                     if event.key == pygame.K_LEFT:
                         color = color -1
                         print(color)
+                    if event.key == pygame.K_s:
+                        if temp_dino.isLock[color] and wal >=100:
+                            wal = wal -100
+                            temp_dino.isLock[color] = False
+                            print(temp_dino.isLock[color])
 
 
         temp_dino.update()
@@ -449,6 +458,9 @@ def introscreen():
         clock.tick(FPS)
         if temp_dino.isJumping == False and temp_dino.isBlinking == False:
             gameStart = True
+#
+# def ending():
+#
 
 def gameplay():
     global high_score
