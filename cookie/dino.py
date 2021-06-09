@@ -11,6 +11,8 @@ FPS = 60
 gravity = 0.6
 jumpCount = 0
 color = 0  #0blue 1red -1green
+wal =0
+game_font = pygame.font.Font(None, 40)
 
 black = (0,0,0)
 white = (255,255,255)
@@ -289,6 +291,48 @@ class Mush(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
+class Coin(pygame.sprite.Sprite):
+    def __init__(self,speed=5,sizex=-1,sizey=-1):
+        pygame.sprite.Sprite.__init__(self,self.containers)
+        self.images,self.rect = load_sprite_sheet('coin.png',1,1,sizex,sizey,-1)
+        self.rect.bottom = int(0.98*height)
+        self.rect.left = width + self.rect.width
+        self.image = self.images[0]
+        self.movement = [-1*speed,0]
+
+    def draw(self):
+        screen.blit(self.image,self.rect)
+
+    def update(self):
+        self.rect = self.rect.move(self.movement)
+
+        if self.rect.right < 0:
+            self.kill()
+
+class Stera(pygame.sprite.Sprite):
+    def __init__(self,speed=15,sizex=-1,sizey=-1):
+        pygame.sprite.Sprite.__init__(self,self.containers)
+        self.images,self.rect = load_sprite_sheet('ptera.png',2,1,sizex,sizey,-1)
+        self.ptera_height = [height*0.50,height*0.40,height*0.60]
+        self.rect.centery = self.ptera_height[random.randrange(0,3)]
+        self.rect.left = width + self.rect.width
+        self.image = self.images[0]
+        self.movement = [-1*speed,0]
+        self.index = 0
+        self.counter = 0
+
+    def draw(self):
+        screen.blit(self.image,self.rect)
+
+    def update(self):
+        if self.counter % 10 == 0:
+            self.index = (self.index+1)%2
+        self.image = self.images[self.index]
+        self.rect = self.rect.move(self.movement)
+        self.counter = (self.counter + 1)
+        if self.rect.right < 0:
+            self.kill()
+
 
 class Ground():
     def __init__(self,speed=-5):
@@ -411,6 +455,7 @@ def gameplay():
     global bigCacti
     global score
     global color
+    global wal
     gamespeed = 4
     startMenu = False
     gameOver = False
@@ -431,12 +476,16 @@ def gameplay():
     pteras = pygame.sprite.Group()
     clouds = pygame.sprite.Group()
     mush = pygame.sprite.Group()
+    coin = pygame.sprite.Group()
+    steras = pygame.sprite.Group()
     last_obstacle = pygame.sprite.Group()
 
     Cactus.containers = cacti
     Ptera.containers = pteras
     Cloud.containers = clouds
     Mush.containers = mush
+    Coin.containers = coin
+    Stera.containers = steras
 
     retbutton_image,retbutton_rect = load_image('replay_button.png',35,31,-1)
     gameover_image,gameover_rect = load_image('game_over.png',190,11,-1)
@@ -510,12 +559,27 @@ def gameplay():
                         if pygame.mixer.get_init() != None:
                             die_sound.play()
 
+            for s in steras:
+                s.movement[0] = -1*gamespeed*3
+                if (not playerDino.isBig):
+                    if pygame.sprite.collide_mask(playerDino,s):
+                        playerDino.isDead = True
+                        if pygame.mixer.get_init() != None:
+                            die_sound.play()
+            for c in coin:
+                c.movement[0] = -1*gamespeed
+                if pygame.sprite.collide_mask(playerDino,c):
+                    wal = wal+1
+                    print(wal)
+                    coin.remove(c)
+
             for m in mush:
                 m.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,m):
                     nowTime = counter
                     playerDino = playerDino1
                     playerDino.isBig = True
+                    mush.remove(m)
                     # if pygame.mixer.get_init() != None:
                     #      die_sound.play()
 
@@ -545,12 +609,25 @@ def gameplay():
                         last_obstacle.empty()
                         last_obstacle.add(Mush(gamespeed, 46, 40))
 
+            if len(steras) == 0 and random.randrange(0,50) == 10 and counter > 0:
+                for l in last_obstacle:
+                    if l.rect.right < width*0.8:
+                        last_obstacle.empty()
+                        last_obstacle.add(Stera(gamespeed, 23, 20))
+            if len(coin) == 0 and random.randrange(0,50) == 10 and counter > 0:
+                for l in last_obstacle:
+                    if l.rect.right < width*0.8:
+                        last_obstacle.empty()
+                        last_obstacle.add(Coin(gamespeed, 46, 40))
+
             if len(clouds) < 5 and random.randrange(0,300) == 10:
                 Cloud(width,random.randrange(height/5,height/2))
-
+            walnet = game_font.render(str(wal), True, (255,255,255))
             playerDino.update()
             cacti.update()
             pteras.update()
+            steras.update()
+            coin.update()
             clouds.update()
             mush.update()
             new_ground.update()
@@ -568,7 +645,10 @@ def gameplay():
                 cacti.draw(screen)
                 pteras.draw(screen)
                 mush.draw(screen)
+                coin.draw(screen)
+                steras.draw(screen)
                 playerDino.draw()
+                screen.blit(walnet, (10,10))
                 pygame.display.update()
             clock.tick(FPS)
 
