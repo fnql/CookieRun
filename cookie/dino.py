@@ -12,6 +12,7 @@ gravity = 0.6
 jumpCount = 0
 color = 0  #0blue 1red 2green
 wal =100
+
 game_font = pygame.font.Font(None, 40)
 
 black = (0,0,0)
@@ -21,6 +22,7 @@ background_col = (235,235,235)
 high_score = 0
 bigCacti = 0
 score = 0
+ending = False
 
 screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
@@ -228,6 +230,7 @@ class Dino():
             if score % 100 == 0 and score != 0:
                 if pygame.mixer.get_init() != None:
                     checkPoint_sound.play()
+
 
         self.counter = (self.counter + 1)
 
@@ -458,9 +461,65 @@ def introscreen():
         clock.tick(FPS)
         if temp_dino.isJumping == False and temp_dino.isBlinking == False:
             gameStart = True
-#
-# def ending():
-#
+
+def ending():
+    temp_dino = Dino(44,47)
+    temp_dino.isBlinking = True
+    gameStart = False
+    global color
+    global score
+    global wal
+
+    temp_ground,temp_ground_rect = load_sprite_sheet('ground.png',15,1,-1,-1,-1)
+    temp_ground_rect.left = width/20
+    temp_ground_rect.bottom = height
+
+    logo,logo_rect = load_image('mushroom.png',300,140,-1)
+    logo_rect.centerx = width*0.6
+    logo_rect.centery = height*0.6
+    while not gameStart:
+        if pygame.display.get_surface() == None:
+            print("Couldn't load display surface")
+            return True
+        else:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                        print(temp_dino.isLock[color])
+                        if not temp_dino.isLock[color]:
+                            temp_dino.isJumping = True
+                            temp_dino.isBlinking = False
+                            temp_dino.movement[1] = -1*temp_dino.jumpSpeed
+                    if event.key == pygame.K_RIGHT:
+                        color = color +1
+                        print(color);
+                    if event.key == pygame.K_LEFT:
+                        color = color -1
+                        print(color)
+                    if event.key == pygame.K_s:
+                        if temp_dino.isLock[color] and wal >=100:
+                            wal = wal -100
+                            temp_dino.isLock[color] = False
+                            print(temp_dino.isLock[color])
+
+
+        temp_dino.update()
+
+        if pygame.display.get_surface() != None:
+            screen.fill(background_col)
+            screen.blit(temp_ground[0],temp_ground_rect)
+            if temp_dino.isBlinking:
+                screen.blit(logo,logo_rect)
+            temp_dino.draw()
+
+            pygame.display.update()
+
+        clock.tick(FPS)
+        if temp_dino.isJumping == False and temp_dino.isBlinking == False:
+            score =0
+            gameStart = True
 
 def gameplay():
     global high_score
@@ -468,6 +527,7 @@ def gameplay():
     global score
     global color
     global wal
+    global ending
     gamespeed = 4
     startMenu = False
     gameOver = False
@@ -522,6 +582,8 @@ def gameplay():
                 gameOver = True
 
             else:
+                if score >=100:
+                    ending()
                 for event in pygame.event.get():
                     if (not dev and nowTime +150 <= counter):
                         playerDino = playerDino2
