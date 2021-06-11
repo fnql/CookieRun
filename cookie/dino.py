@@ -31,7 +31,7 @@ pygame.display.set_caption("Dino Run ")
 jump_sound = pygame.mixer.Sound('images/jump.wav')
 die_sound = pygame.mixer.Sound('images/die.wav')
 checkPoint_sound = pygame.mixer.Sound('images/checkPoint.wav')
-
+back_sound = pygame.mixer.Sound('ncs1.wav')
 def load_image(
     name,
     sizex=-1,
@@ -406,6 +406,9 @@ class Scoreboard():
 
 
 def introscreen():
+    back_sound.stop()
+    back_sound.play()
+    back_sound.set_volume(0.4)
     temp_dino = Dino(44,47)
     temp_dino.isBlinking = True
     gameStart = False
@@ -474,9 +477,13 @@ def ending():
     temp_ground_rect.left = width/20
     temp_ground_rect.bottom = height
 
-    logo,logo_rect = load_image('mushroom.png',300,140,-1)
-    logo_rect.centerx = width*0.6
-    logo_rect.centery = height*0.6
+    logo,logo_rect = load_image('cake1.png',300,140,-1)
+    logo_rect.centerx = width*0.3
+    logo_rect.centery = height*0.75
+
+    en, en_rect = load_image('end2.png', 500, 100, -1)
+    en_rect.centerx = width * 0.5
+    en_rect.centery = height * 0.2
     while not gameStart:
         if pygame.display.get_surface() == None:
             print("Couldn't load display surface")
@@ -484,7 +491,8 @@ def ending():
         else:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return True
+                    pygame.quit()
+                    quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                         print(temp_dino.isLock[color])
@@ -512,6 +520,7 @@ def ending():
             screen.blit(temp_ground[0],temp_ground_rect)
             if temp_dino.isBlinking:
                 screen.blit(logo,logo_rect)
+                screen.blit(en, en_rect)
             temp_dino.draw()
 
             pygame.display.update()
@@ -542,6 +551,7 @@ def gameplay():
     counter = 0
     jumpCount = 0
     nowTime = 0
+    score = 0
 
 
     cacti = pygame.sprite.Group()
@@ -582,7 +592,7 @@ def gameplay():
                 gameOver = True
 
             else:
-                if score >=100:
+                if score >=30:
                     ending()
                 for event in pygame.event.get():
                     if (not dev and nowTime +150 <= counter):
@@ -607,16 +617,38 @@ def gameplay():
                             playerDino.isBig = True
                             dev = True
 
+                        if event.key == pygame.K_i:
+                            introscreen()
+
                         if event.key == pygame.K_DOWN:
                             if not (playerDino.isJumping and playerDino.isDead):
                                 playerDino.isDucking = True
+
+                        if event.key == pygame.K_8:
+                            new_ground.speed -= 1
+                            gamespeed += 1
+                            print(gamespeed)
+                        if event.key == pygame.K_2:
+                            new_ground.speed += 1
+                            gamespeed -= 1
+
 
                     if event.type == pygame.KEYUP:
                         if event.key == pygame.K_SPACE:
                             jumpCount = jumpCount + 1
 
-                        elif event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_DOWN:
                             playerDino.isDucking = False
+
+                        if event.key == pygame.K_8:
+                            new_ground.speed -= 1
+                            gamespeed += 1
+                            print(gamespeed)
+                        if event.key == pygame.K_2:
+                            new_ground.speed += 1
+                            gamespeed -= 1
+
+
             for c in cacti:
                 c.movement[0] = -1*gamespeed
                 if (not playerDino.isBig):
