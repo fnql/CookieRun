@@ -414,6 +414,8 @@ def introscreen():
     gameStart = False
     global color
     global wal
+    price = "Blue,Red Free And Green 100Coin"
+    buy = "Buy Key = 'S'"
 
     temp_ground,temp_ground_rect = load_sprite_sheet('ground.png',15,1,-1,-1,-1)
     temp_ground_rect.left = width/20
@@ -449,7 +451,9 @@ def introscreen():
                             temp_dino.isLock[color] = False
                             print(temp_dino.isLock[color])
 
-
+        walnet = game_font.render(str(wal), True, (255, 255, 0))
+        dinoPrice = game_font.render(price, True, (0, 0, 0))
+        dinoBuy = game_font.render(buy, True, (0, 0, 0))
         temp_dino.update()
 
         if pygame.display.get_surface() != None:
@@ -458,7 +462,9 @@ def introscreen():
             if temp_dino.isBlinking:
                 screen.blit(logo,logo_rect)
             temp_dino.draw()
-
+            screen.blit(walnet, (10, 10))
+            screen.blit(dinoPrice, (50, 50))
+            screen.blit(dinoBuy, (200, 80))
             pygame.display.update()
 
         clock.tick(FPS)
@@ -592,7 +598,7 @@ def gameplay():
                 gameOver = True
 
             else:
-                if score >=30:
+                if score >=500:
                     ending()
                 for event in pygame.event.get():
                     if (not dev and nowTime +150 <= counter):
@@ -728,7 +734,7 @@ def gameplay():
 
             if len(clouds) < 5 and random.randrange(0,300) == 10:
                 Cloud(width,random.randrange(height/5,height/2))
-            walnet = game_font.render(str(wal), True, (255,255,255))
+            walnet = game_font.render(str(wal), True, (255,255,0))
             playerDino.update()
             cacti.update()
             pteras.update()
